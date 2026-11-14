@@ -1,0 +1,49 @@
+{
+  "_about": "Skills whose methods were rewritten (not copied) into coworker-reply-coach. skill-update-check compares them with the versions recorded here and reports changes; nothing is merged automatically. The skill itself never reads this file.",
+  "skill": "coworker-reply-coach",
+  "sources": [
+    {
+      "name": "partner-text-coach",
+      "type": "github",
+      "repo": "https://github.com/curiositech/some_claude_skills",
+      "licence": "MIT",
+      "paths": [
+        {
+          "path": ".claude/skills/partner-text-coach",
+          "last_commit": "6713fc7a6451c8dee5903b98cd2063ff4cbf7317",
+          "tree": "b6ac37310cb449a9c43f16bb3c8c6cfe2829e906"
+        }
+      ],
+      "used_in": [
+        "SKILL.md"
+      ],
+      "what": "三層閱讀（字面、情緒、需要）、承接—認錯—搭橋的回覆結構、何時改用通話、不腦補語氣",
+      "reviewed_commit": "d47e2e5ded912f448b36da6c391be724d3e50496",
+      "reviewed_at": "2026-11-14"
+    },
+    {
+      "name": "ayi-nonviolent-communication",
+      "type": "github",
+      "repo": "https://github.com/ayi-ai/ayi-nonviolent-communication",
+      "licence": "MIT",
+      "paths": [
+        {
+          "path": "SKILL.md",
+          "last_commit": "edd2d077367978a462ec1a94ec440bc34014ae2b",
+          "tree": "b0b081036ded77285a727b5785cd75c9775ad841"
+        },
+        {
+          "path": "references",
+          "last_commit": "edd2d077367978a462ec1a94ec440bc34014ae2b",
+          "tree": "1889e2156149a625daa54c33edd7dccdabf88d7b"
+        }
+      ],
+      "used_in": [
+        "SKILL.md"
+      ],
+      "what": "事實與評論之分、會擋住對方的回法、事實—感受—請求的順序",
+      "reviewed_commit": "edd2d077367978a462ec1a94ec440bc34014ae2b",
+      "reviewed_at": "2026-11-14"
+    }
+  ]
+}
