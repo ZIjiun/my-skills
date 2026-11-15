@@ -2,11 +2,9 @@
 
 ## 目的地
 
-- 資料庫：「影片筆記」
-- Data source：`collection://41942fcc-c1a1-8104-a944-000ba4cb2ef9`
-- 網址：https://app.notion.com/p/41942fccc1a1811f98aed3edad02b5b5
+- 資料庫：Notion 工作區裡名為「影片筆記」的資料庫。
 
-先用 Notion connector 的 fetch 讀這個 data source，確認欄位名稱。找不到（被刪掉、換了工作區）時，搜尋「影片筆記」；還是找不到，就問使用者要重建資料庫還是改放別的地方，不要自己亂建。
+用 Notion connector 的 search 找「影片筆記」，再 fetch 它的 data source（`collection://…`）確認欄位名稱。找到多個同名的，問使用者用哪一個。找不到（被刪掉、換了工作區）時，問使用者要照下面的欄位重建資料庫，還是改放別的地方，不要自己亂建。
 
 ## 欄位
 

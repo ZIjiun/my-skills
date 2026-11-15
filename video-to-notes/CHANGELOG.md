@@ -7,3 +7,7 @@
 - 初稿完成後由獨立審查 agent 對照原始字幕找漏，只回報不修改，最多 5 輪。
 - 改寫自 wdkns/wdkns-skills 的 youtube-render-pdf 與 bilibili-render-pdf（GPL-3.0），本 skill 同樣以 GPL-3.0 授權；修改內容見 `NOTICE.md`。
 - 範本改用繁中字型自動挑選（Noto CJK TC／微軟正黑體／新細明體／宋體-繁／蘋方-繁），原本的 fandol 缺許多繁體字。
+
+## 2026-11-15（同日修正）
+
+- Notion 資料庫改成用名稱「影片筆記」搜尋，不再寫死資料庫 ID，因為這個 repo 是公開的。
