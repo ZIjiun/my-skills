@@ -25,3 +25,10 @@
 - **xelatex 在、但缺中文套件**：check_env.py 原本只檢查 xelatex，編譯時才發現缺 ctex。現在會檢查 ctex、xeCJK、zhnumber，也檢查 sherpa-onnx；setup.md 新增補裝方法（含在 Ubuntu TeX Live 2023 上實測過的原始碼建置步驟；ctex-kit 最新版需要 2026 年以後的 LaTeX，所以固定在 2022 年的版本）。
 - **Notion 的 PDF 欄位填不進去**：同一次上傳不能同時用在頁面內容和 PDF 欄位，會報 `File not found`。notion-output.md 改成上傳兩次。
 - upstream-sources.json 新增 claude-video（只借想法，MIT）。
+
+## 2026-11-15（第三版）
+
+- **雲端缺工具時直接裝**：第 0 步原本只寫「不要替使用者安裝」，在雲端環境可能被誤解成連自己的工作環境也不能裝，而停下來問使用者。改成：雲端（每個對話都是新環境）缺的套件、模型、中文 LaTeX 套件直接補齊；「不要替使用者安裝」只適用使用者自己的電腦。
+- **下載指令第一行固定 `yt-dlp -U`**：舊版 yt-dlp 常因網站改版下載失敗，使用者不用記得更新。
+- **語音轉文字改成 sherpa-onnx 一套跑兩種引擎**：`scripts/transcribe_sensevoice.py` 改名 `scripts/transcribe.py`，加 `--engine whisper`。原本的 openai-whisper 要從 OpenAI 下載模型，雲端連不到，英文影片沒字幕時會卡住；改用 GitHub 上 sherpa-onnx 轉好的 whisper large-v3-turbo。
+- **語言對照表修正**：原本寫 SenseVoice 不支援英文，錯了，它支援中英日韓粵。實測一段 33 秒的英文，兩者都轉對，SenseVoice 5 秒、whisper 63 秒，所以英文也改成 SenseVoice 優先，whisper 當備案；其他語言用 whisper。日文、韓文也實測過 whisper 自動判斷語言正常。

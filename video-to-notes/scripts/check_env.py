@@ -17,7 +17,6 @@ TOOLS = [
     ("ffprobe", "讀本地影片資訊", "必要"),
     ("xelatex", "編譯 PDF", "要 PDF 就必要"),
     ("magick", "拼縮圖、裁切、壓縮圖片", "建議"),
-    ("whisper", "沒有字幕時語音轉文字（英文和其他語言）", "沒字幕的其他語言影片才需要"),
 ]
 
 # xelatex 在不代表範本能編譯：還要有這些中文套件
@@ -116,9 +115,9 @@ def main():
 
     try:
         import sherpa_onnx  # noqa: F401
-        print("  [OK]   sherpa-onnx（SenseVoice 語音轉文字，中日韓粵影片用；模型另外下載，見 scripts/transcribe_sensevoice.py）")
+        print("  [OK]   sherpa-onnx（語音轉文字：SenseVoice／whisper；模型另外下載，見 scripts/transcribe.py 開頭）")
     except Exception:
-        print("  [缺少] sherpa-onnx  用途：沒字幕的中日韓粵影片語音轉文字（pip install sherpa-onnx soundfile numpy）")
+        print("  [缺少] sherpa-onnx  用途：沒字幕的影片語音轉文字（pip install sherpa-onnx soundfile numpy）")
 
     fonts = find_fonts()
     print()

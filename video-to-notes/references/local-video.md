@@ -28,7 +28,7 @@ ffprobe -v quiet -print_format json -show_format -show_streams "<影片>" > meta
    ```
    圖片型字幕（hdmv_pgs_subtitle、dvd_subtitle）沒辦法直接轉文字，跳到下一項。
 2. **同資料夾的外掛字幕**：同檔名的 `.srt`、`.vtt`、`.ass`（例如 `lecture.zh-TW.srt`）。`.ass`／`.vtt` 用 `ffmpeg -i x.ass subs.srt` 轉成 srt。
-3. **語音轉文字**：見 SKILL.md「語音轉文字」（中日韓粵用 SenseVoice，其他語言用 whisper）。
+3. **語音轉文字**：見 SKILL.md「語音轉文字」（中日韓粵英用 SenseVoice，其他語言用 whisper）。
 4. **只看畫面**：音質太差時，密集抽格，從畫面整理。
 
 有多條字幕時，選影片原本語言的那條；拿不準就問使用者。

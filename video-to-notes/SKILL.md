@@ -21,10 +21,11 @@ description: 把 YouTube、Bilibili 或電腦上的影片檔整理成繁體中�
 
 ## 第 0 步：檢查工具
 
-先執行 `python scripts/check_env.py`（macOS 用 `python3`）。它會列出 yt-dlp、ffmpeg、ffprobe、xelatex 與中文 LaTeX 套件（ctex、xeCJK）、magick、語音轉文字工具（sherpa-onnx、whisper）和繁中字型是否可用。
+先執行 `python scripts/check_env.py`（macOS 用 `python3`）。它會列出 yt-dlp、ffmpeg、ffprobe、xelatex 與中文 LaTeX 套件（ctex、xeCJK）、magick、語音轉文字工具（sherpa-onnx）和繁中字型是否可用。
 
-- 缺工具時，照 `references/setup.md` 告訴使用者怎麼裝（Windows 用 winget，沒有 winget 時改下載單一執行檔；macOS 用 Homebrew），不要自己替使用者安裝系統軟體。
-- 缺語音轉文字工具：有字幕的影片照做；沒字幕的才需要（見「語音轉文字」）。
+- **在雲端環境缺工具：自己裝，不用問。**雲端的工作環境每個對話都是新的，上次裝的都不在，這是正常的。直接補齊：`pip install yt-dlp sherpa-onnx soundfile numpy opencc`（pip 要加 `--break-system-packages`）、需要的語音模型（網址在 `scripts/transcribe.py` 開頭）、缺 ctex／xeCJK 就照 `references/setup.md`「中文 LaTeX 套件」的原始碼建置。
+- **在使用者自己的電腦缺工具**（Claude Code，或下面第 2 步請使用者下載時）：照 `references/setup.md` 告訴使用者怎麼裝（Windows 用 winget，沒有 winget 時改下載單一執行檔；macOS 用 Homebrew），不要自己替使用者安裝系統軟體。
+- 語音轉文字的套件和模型只有沒字幕的影片才需要（見「語音轉文字」），有字幕時不用準備。
 - 缺 xelatex：仍可做 Notion 頁面，但要明講這次沒有 PDF。xelatex 在但缺 ctex／xeCJK：照 `references/setup.md`「中文 LaTeX 套件」補裝，否則第 7 步一定失敗。
 
 **這個 skill 可能跑在哪裡**：Claude 桌面版／App 的對話，指令其實在雲端環境執行，常常連不到 Bilibili、YouTube 和 Hugging Face；使用者的電腦另外透過連結的資料夾存取。Claude Code 則直接在使用者電腦上執行。第 2 步的下載方式依這點決定。
@@ -62,8 +63,15 @@ Windows 路徑含空白或中文時，命令列一律加引號。
 2. **在使用者電腦上下載，我自己執行**：有能在使用者電腦執行指令的工具（例如 `device_bash`）時，先請使用者連結一個資料夾，在那裡執行下面第 3 層的指令，再把檔案帶進工作資料夾。
 3. **請使用者自己下載**：上面兩層都不行時，給他可以直接貼上的指令，下載完請他在桌面版按「Add folder」連結資料夾，再讀進來。
    - 沒有 yt-dlp 時，Windows 可以不安裝，直接下載單一執行檔到該資料夾：`curl.exe -L -o yt-dlp.exe https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe`，之後指令開頭寫 `.\yt-dlp.exe`（PowerShell 執行目前資料夾的程式一定要加 `.\`）。沒有 winget 的電腦也適用。
+   - **給使用者的每一段指令，第一行固定放更新**：`.\yt-dlp.exe -U`（用 winget 或 Homebrew 裝的寫 `yt-dlp -U`）。Bilibili、YouTube 常改版，舊版容易下載失敗；放在第一行，使用者整段貼上就會先更新，不用記。
    - 先跑 `-F` 列格式，再**影像、聲音分開下載**，使用者電腦就不需要 ffmpeg，合併在這裡做：
      ```
+     .\yt-dlp.exe -U
+     .\yt-dlp.exe -F "<URL>"
+     ```
+     看完格式後：
+     ```
+     .\yt-dlp.exe -U
      .\yt-dlp.exe -f "<影像格式ID>,<聲音格式ID>" --write-info-json --write-thumbnail --write-subs --write-auto-subs --sub-langs "<語言>" -o "video.f%(format_id)s.%(ext)s" "<URL>"
      ```
      讀進來後合併：`ffmpeg -i video.f<影像>.mp4 -i video.f<聲音>.m4a -c copy video.mp4`。
@@ -80,31 +88,24 @@ Windows 路徑含空白或中文時，命令列一律加引號。
 
 ### 語音轉文字（沒有字幕時）
 
-先抽音訊：`ffmpeg -i "<影片或音訊>" -vn -ac 1 -ar 16000 audio.wav`。依影片語言選工具：
+先抽音訊：`ffmpeg -i "<影片或音訊>" -vn -ac 1 -ar 16000 audio.wav`。用 `scripts/transcribe.py`，依影片語言選引擎：
 
 | 影片語言 | 第一選擇 | 備案 |
 |---|---|---|
 | 中文、粵語、日文、韓文 | SenseVoice | whisper |
-| 英文和其他語言 | whisper | 沒有（SenseVoice 不支援） |
-
-**SenseVoice**（`scripts/transcribe_sensevoice.py`）：
+| 英文 | SenseVoice | whisper（腔調重、術語多、SenseVoice 轉出來錯很多時） |
+| 其他語言（法文、西班牙文等） | whisper | 沒有（SenseVoice 不支援） |
 
 ```
-python scripts/transcribe_sensevoice.py audio.wav <模型資料夾> subs.srt --lang auto
+python scripts/transcribe.py audio.wav <模型資料夾> subs.srt --engine sensevoice --lang auto
+python scripts/transcribe.py audio.wav <模型資料夾> subs.srt --engine whisper --lang auto
 ```
 
-- 一般電腦（沒有獨立顯示卡）也很快，幾分鐘的影片幾秒到幾十秒就轉完；中文準確度依開發團隊公布的測試優於 whisper。
-- 需要 `pip install sherpa-onnx soundfile numpy`，模型從 GitHub 下載（約 1GB，下載網址寫在腳本開頭）。雲端環境連不到 Hugging Face 時也能用。
+- 兩種引擎都透過 sherpa-onnx 執行，模型都放在 GitHub（網址在腳本開頭）。OpenAI 官方和 Hugging Face 的模型網址在雲端環境連不到，所以不用 `pip install openai-whisper` 那一套。
+- **SenseVoice**：很快，一般電腦或雲端都是幾分鐘的影片幾秒到幾十秒轉完，會自動加標點。模型約 1GB。
+- **whisper**（large-v3-turbo，約 560MB）：自動判斷語言，支援的語言最多，但慢很多。實測雲端 2 核心時，處理時間約是音訊長度的 2 倍（33 秒的英文花 63 秒；SenseVoice 花 5 秒），超過 20 分鐘的影片先告訴使用者大約要多久。
 - 時間戳以語音段落為單位（每段最長約 12 秒），找截圖和標時間戳夠用。
-
-**whisper**：
-
-```
-whisper audio.wav --model medium --output_format srt --output_dir .
-```
-
-- 不要強制 `--language`，讓 whisper 自己判斷；確定是中文時可加 `--language zh --initial_prompt "以下是繁體中文的句子。"`，讓輸出偏向繁體。
-- 沒有 NVIDIA 顯示卡時 medium 會很慢，超過 30 分鐘的影片先告訴使用者大約要多久，或改用 `--model small`。
+- 使用者自己的電腦已經裝好 openai-whisper、又有 NVIDIA 顯示卡時（Claude Code），也可以直接用它：`whisper audio.wav --model medium --output_format srt --output_dir .`。
 
 **兩個都要注意**：
 
@@ -258,4 +259,4 @@ Notion connector 沒接或寫入失敗時：PDF 照樣交付，告訴使用者 N
 - `references/setup.md`：Windows／macOS 工具安裝步驟
 - `scripts/check_env.py`：檢查工具、中文 LaTeX 套件與字型
 - `scripts/scan_frames.py`：截圖第一段，逐幀場景偵測＋每秒保底＋去重複，產生總覽圖
-- `scripts/transcribe_sensevoice.py`：用 SenseVoice 把音訊轉成 SRT（中日韓粵）
+- `scripts/transcribe.py`：用 SenseVoice 或 whisper（sherpa-onnx）把音訊轉成 SRT

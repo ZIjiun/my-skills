@@ -8,8 +8,7 @@
 | ffmpeg（含 ffprobe） | 抽截圖、抽音訊、讀本地影片資訊和字幕 | 要 |
 | xelatex（TeX Live 或 MiKTeX） | 編譯 PDF | 要 PDF 就要 |
 | ImageMagick（magick） | 拼縮圖總覽、裁切、壓縮圖片 | 建議 |
-| sherpa-onnx＋SenseVoice 模型 | 沒字幕時語音轉文字（中文、粵語、日文、韓文） | 沒字幕的中日韓影片才要 |
-| whisper（openai-whisper） | 沒字幕時語音轉文字（英文和其他語言；中日韓的備案） | 沒字幕的其他語言影片才要 |
+| sherpa-onnx＋語音模型（SenseVoice、whisper） | 沒字幕時語音轉文字 | 沒字幕的影片才要 |
 | Python 3 | 跑語音轉文字和檢查腳本 | 要 |
 
 裝完後**重開終端機**（或重開 Claude 桌面版），再執行 `python scripts/check_env.py` 確認。
@@ -26,16 +25,11 @@ winget install --id MiKTeX.MiKTeX -e
 
 - **TeX**：MiKTeX 比較小，缺的套件會在第一次編譯時自動下載（第一次會比較久）。打開「MiKTeX Console」→ Settings，把「Install missing packages on-the-fly」設成 **Always**，不然編譯時會跳視窗卡住。想一次裝齊可改裝 TeX Live（`winget install --id TeXLive.TeXLive -e`，約 8 GB）。
 - **字型**：Windows 內建「微軟正黑體」和「新細明體」，範本會自動使用，不用另外裝。想要更好看的明體可以裝 Noto Serif CJK TC（Google Fonts 下載，右鍵「為所有使用者安裝」）。
-- **SenseVoice**（中日韓粵影片用）：
+- **語音轉文字**（只有沒字幕的影片才需要）：
   ```powershell
   pip install sherpa-onnx soundfile numpy
   ```
-  模型下載網址寫在 `scripts/transcribe_sensevoice.py` 開頭（約 1GB，只要下載一次），解壓到固定的資料夾，例如 `%USERPROFILE%\models\sensevoice`。
-- **whisper**（英文和其他語言用）：
-  ```powershell
-  pip install -U openai-whisper
-  ```
-  有 NVIDIA 顯示卡的話，先照 https://pytorch.org 的指示裝 CUDA 版 PyTorch，速度會快很多。
+  模型下載網址寫在 `scripts/transcribe.py` 開頭：`silero_vad.onnx` 一定要；SenseVoice（約 1GB，中日韓粵英）和 whisper turbo（約 560MB，其他語言）依需要下載。全部解壓到同一個資料夾，例如 `%USERPROFILE%\models`，只要下載一次。
 - PowerShell 裡的 `curl` 是別名，上傳檔案到 Notion 時要用 `curl.exe`（Windows 10 以上內建）。
 
 ### 沒有 winget 時
@@ -57,13 +51,11 @@ winget install --id MiKTeX.MiKTeX -e
 ```bash
 brew install python yt-dlp ffmpeg imagemagick
 brew install --cask mactex-no-gui
-pip3 install sherpa-onnx soundfile numpy   # SenseVoice，中日韓影片
-pip3 install -U openai-whisper             # 其他語言
+pip3 install sherpa-onnx soundfile numpy   # 語音轉文字；模型網址見 scripts/transcribe.py
 ```
 
 - MacTeX 約 5 GB，裝完要重開終端機，`xelatex` 才找得到。
 - 字型：macOS 內建「宋體-繁」（Songti TC）和「蘋方-繁」（PingFang TC），範本會自動使用。
-- Apple Silicon（M 系列）跑 whisper 不需要額外設定；想更快可以改用 `pip3 install mlx-whisper`，但這個 skill 的指令是以 openai-whisper 為準。
 
 ## 中文 LaTeX 套件（ctex、xeCJK）
 
@@ -97,5 +89,5 @@ pip3 install -U openai-whisper             # 其他語言
 - **Bilibili 畫質**：不登入通常也有一般 1080P，先用 `-F` 看。只拿到 480P／720P、或要字幕時，可加 `--cookies-from-browser chrome`（會讀 Chrome 的登入資料，要先同意；要先完全關掉 Chrome，讀不到時改用 Firefox）。
 - **雲端環境下載被擋**（`403`、`Unable to connect to proxy`）：不是暫時性錯誤，改在使用者電腦下載，見 SKILL.md 第 2 步「下載不到時」。
 - **編譯出現 Missing character**：字型缺字。確認 check_env.py 有找到繁中字型。
-- **whisper 很慢**：中日韓影片改用 SenseVoice；其他語言沒有顯示卡時，改 `--model small`，或先只轉需要的片段。
-- **連不到 Hugging Face**（雲端環境常見，whisper 和 faster-whisper 的模型都放在那裡）：中日韓影片用 SenseVoice，它的模型在 GitHub。
+- **whisper 很慢**：處理時間約是音訊長度的 2 倍。中日韓粵英影片改用 SenseVoice；其他語言只能等，或先只轉需要的片段。
+- **連不到 Hugging Face 或 OpenAI 的模型網址**（雲端環境常見）：本 skill 的模型都從 GitHub 下載，不受影響。
