@@ -1,0 +1,31 @@
+{
+  "_about": "Skills whose methods were rewritten (not copied) into video-to-notes. skill-update-check compares them with the versions recorded here and reports changes; nothing is merged automatically. The skill itself never reads this file.",
+  "skill": "video-to-notes",
+  "sources": [
+    {
+      "name": "wdkns-skills",
+      "type": "github",
+      "repo": "https://github.com/wdkns/wdkns-skills",
+      "licence": "GPL-3.0",
+      "paths": [
+        {
+          "path": "skills/youtube-render-pdf",
+          "last_commit": "39f1a04c46e1d0d70f6b71a8fcf079b305a632b9",
+          "tree": "5952422165e6b32dd077d45caa889de6ccbad315"
+        },
+        {
+          "path": "skills/bilibili-render-pdf",
+          "last_commit": "2ecf0887d282deef7d90c2fc259a1f5ca76a0b87",
+          "tree": "639341c8e5150ca75fd65575955e564e6735e760"
+        }
+      ],
+      "used_in": [
+        "SKILL.md",
+        "assets/notes-template.tex"
+      ],
+      "what": "youtube-render-pdf 與 bilibili-render-pdf 的講義寫作規則、截圖挑選與時間來源、長影片分段、Bilibili 字幕三級回退與分P處理，以及 LaTeX 範本（重點框配色與封面版面）",
+      "reviewed_commit": "496fb3fa0e9845167db8a5eff2d86f5ffcc2eeb4",
+      "reviewed_at": "2026-11-15"
+    }
+  ]
+}

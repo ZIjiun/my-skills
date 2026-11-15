@@ -1,0 +1,173 @@
+% video-to-notes 繁體中文講義範本
+% 改寫自 wdkns/wdkns-skills 的 youtube-render-pdf/assets/notes-template.tex（GPL-3.0）
+% 修改：改成繁體中文與台灣用語、自動挑選繁中字型、加入可點擊的影片時間戳 \ts{}。
+\documentclass[a4paper]{article}
+
+% ---------- 字型：不用 fandol（缺很多繁體字），依序找系統上的繁中字型 ----------
+\usepackage[fontset=none]{ctex}
+\newcommand{\trysetcjk}[3]{% #1 主字型  #2 粗體/黑體  #3 等寬
+  \setCJKmainfont{#1}[BoldFont=#2,Language=Chinese Traditional]%
+  \setCJKsansfont{#2}[Language=Chinese Traditional]%
+  \setCJKmonofont{#3}[Language=Chinese Traditional]%
+  \setCJKfamilyfont{zhsong}{#1}[Language=Chinese Traditional]%
+  \setCJKfamilyfont{zhhei}{#2}[Language=Chinese Traditional]}
+\IfFontExistsTF{Noto Serif CJK TC}{%
+  \trysetcjk{Noto Serif CJK TC}{Noto Sans CJK TC}{Noto Sans Mono CJK TC}}{%
+\IfFontExistsTF{Microsoft JhengHei}{% Windows
+  \IfFontExistsTF{PMingLiU}{\trysetcjk{PMingLiU}{Microsoft JhengHei}{MingLiU}}%
+                           {\trysetcjk{Microsoft JhengHei}{Microsoft JhengHei}{Microsoft JhengHei}}}{%
+\IfFontExistsTF{Songti TC}{% macOS
+  \trysetcjk{Songti TC}{PingFang TC}{PingFang TC}}{%
+\IfFontExistsTF{PingFang TC}{\trysetcjk{PingFang TC}{PingFang TC}{PingFang TC}}{%
+  \PackageWarning{video-to-notes}{找不到繁中字型，改用 FandolSong，部分繁體字可能缺字}%
+  \setCJKmainfont{FandolSong-Regular.otf}[BoldFont=FandolSong-Bold.otf]%
+  \setCJKsansfont{FandolHei-Regular.otf}\setCJKmonofont{FandolFang-Regular.otf}}}}}
+
+% ---------- 繁中標題用語 ----------
+\ctexset{
+  contentsname = {目錄},
+  figurename = {圖},
+  tablename = {表},
+}
+
+% Basic packages
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage{etoolbox}
+\usepackage{listings}
+\renewcommand{\lstlistingname}{程式碼}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue!55!black}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{tikz}
+\IfFileExists{pgfplots.sty}{
+    \usepackage{pgfplots}
+    \pgfplotsset{compat=1.18}
+}{}
+
+% Highlight box palette: low-saturation and print-friendly.
+\definecolor{kbBack}{HTML}{F2F6FA}\definecolor{kbFrame}{HTML}{9DB4CC}\definecolor{kbTitle}{HTML}{52708F}
+\definecolor{ibBack}{HTML}{FBF5E7}\definecolor{ibFrame}{HTML}{C9A961}\definecolor{ibTitle}{HTML}{7D5F1E}
+\definecolor{wbBack}{HTML}{FCF2F0}\definecolor{wbFrame}{HTML}{D6A096}\definecolor{wbTitle}{HTML}{9E4F43}
+\definecolor{dbBack}{HTML}{F4F7F3}\definecolor{dbFrame}{HTML}{AEC2AC}\definecolor{dbTitle}{HTML}{5F7F64}
+
+\tcbset{softbox/.style={
+    enhanced, boxrule=0.8pt, arc=2pt, left=3mm, right=3mm, top=2mm, bottom=2mm,
+    coltitle=white, fonttitle=\bfseries, toptitle=0.6mm, bottomtitle=0.6mm
+}}
+
+\newtcolorbox{knowledgebox}[1]{softbox, colback=kbBack, colframe=kbFrame, colbacktitle=kbTitle, title=#1}
+\newtcolorbox{importantbox}[1]{softbox, colback=ibBack, colframe=ibFrame, colbacktitle=ibTitle, title=#1}
+\newtcolorbox{warningbox}[1]{softbox, colback=wbBack, colframe=wbFrame, colbacktitle=wbTitle, title=#1}
+\newtcolorbox{dialoguebox}[1]{softbox, breakable, colback=dbBack, colframe=dbFrame, colbacktitle=dbTitle, title=#1}
+
+% Listings
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red!60!black},
+    commentstyle=\color{green!60!black},
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    captionpos=b,
+    extendedchars=false
+}
+
+% ---------- 封面資訊 ----------
+\newcommand{\notetitle}{課程筆記：[在此填寫課程主題]}
+\newcommand{\noteauthors}{video-to-notes}
+\newcommand{\notedate}{\today}
+\newcommand{\videosource}{[YouTube／Bilibili／本地影片]}
+\newcommand{\videochannel}{[在此填寫頻道或講者]}
+\newcommand{\videopublishdate}{[在此填寫發布日期]}
+\newcommand{\videoduration}{[在此填寫影片長度]}
+\newcommand{\videourl}{}        % 線上影片網址；本地影片留空
+\newcommand{\videofile}{}       % 本地影片檔名；線上影片留空
+\newcommand{\videocoverpath}{}
+
+% ---------- 時間戳 ----------
+% \videotimeprefix 填「網址前綴」，後面直接接秒數就能跳到該時間點：
+%   YouTube：  https://youtu.be/<影片ID>?t=
+%   Bilibili： https://www.bilibili.com/video/<BV號>?t=        （分P：.../<BV號>?p=2\&t=  的 & 要寫成 \&）
+%   本地影片：留空，時間戳只顯示文字，不做連結。
+\newcommand{\videotimeprefix}{}
+% \ts{秒數}{顯示文字}，例如 \ts{751}{12:31}
+\DeclareRobustCommand{\ts}[2]{%
+  \ifdefempty{\videotimeprefix}{{\small\textsf{[#2]}}}%
+  {\href{\videotimeprefix#1}{\small\textsf{[$\blacktriangleright$\,#2]}}}}
+% \tsrange{起始秒數}{起始文字}{結束文字}：小節開頭標示時間區間，只連到起點
+\DeclareRobustCommand{\tsrange}[3]{%
+  \ifdefempty{\videotimeprefix}{{\small\textsf{[#2--#3]}}}%
+  {\href{\videotimeprefix#1}{\small\textsf{[$\blacktriangleright$\,#2--#3]}}}}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace{1.2cm}
+{\huge\bfseries \notetitle\par}
+\vspace{0.8cm}
+{\large \noteauthors\par}
+\vspace{0.3cm}
+{\large \notedate\par}
+\vspace{1.2cm}
+
+\ifdefempty{\videocoverpath}{
+{\small 請在產生筆記時填入影片封面圖的本地路徑。\par}
+}{
+\includegraphics[width=0.82\textwidth,height=0.45\textheight,keepaspectratio]{\videocoverpath}\par
+}
+
+\vfill
+\begin{tcolorbox}[width=0.9\textwidth, colback=black!2!white, colframe=black!60, sharp corners]
+\textbf{來源}：\videosource\par
+\textbf{講者／頻道}：\videochannel\par
+\textbf{發布日期}：\videopublishdate\par
+\textbf{影片長度}：\videoduration\par
+\ifdefempty{\videourl}{}{\textbf{影片連結}：\href{\videourl}{\nolinkurl{\videourl}}\par}
+\ifdefempty{\videofile}{}{\textbf{影片檔案}：\texttt{\expandafter\detokenize\expandafter{\videofile}}\par}
+\textbf{時間戳}：\ifdefempty{\videotimeprefix}{內文中的 [mm:ss] 為影片時間。}{內文中的 [$\blacktriangleright$ mm:ss] 可點擊，直接跳到影片該時間點。}\par
+\textbf{改寫自}：\href{https://github.com/wdkns/wdkns-skills}{\nolinkurl{wdkns/wdkns-skills}}（GPL-3.0）
+\end{tcolorbox}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+%% --- 正文內容開始 --- %%
+
+% 用產生的筆記取代這一段。
+% 每個 \subsection 標題後的第一行放時間區間，例如：
+% \subsection{注意力機制的動機}
+% \tsrange{751}{12:31}{15:02}
+%
+% 重點句、公式、對話後面可以加單點時間戳，例如：……這就是 KV cache 的作用 \ts{812}{13:32}。
+%
+% 圖片不要放進 knowledgebox／importantbox／warningbox／dialoguebox。
+% 影片截圖的時間來源寫在同一頁的頁尾註腳：
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=\textwidth]{figures/attention_formula.png}
+% \caption{注意力公式的完整投影片 \protect\footnotemark}
+% \end{figure}
+% \footnotetext{影片畫面時間區間：\tsrange{751}{12:31}{12:46}。若為裁切圖，時間區間仍對應原影片畫面。}
+%
+% 訪談、對談類影片可用 dialoguebox 保留短而高資訊量的原始對話：
+% \begin{dialoguebox}{原始對話片段 \tsrange{1122}{18:42}{19:05}}
+% \textbf{主持人}：……
+%
+% \textbf{來賓}：……
+% \end{dialoguebox}
+%
+% 最後一節：\section{總結與延伸}
+
+%% --- 正文內容結束 --- %%
+
+\end{document}
