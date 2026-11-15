@@ -20,3 +20,8 @@
 | 輸出 | `.tex`＋PDF | 另外寫進 Notion「影片筆記」資料庫（原生頁面＋附 PDF） |
 | 環境檢查 | 無 | 新增 `scripts/check_env.py`、`references/setup.md` |
 | 平台 | Codex（`agents/openai.yaml`） | Claude Code／Cowork；未附 openai.yaml |
+
+## 其他參考（2026-11-15 第二版）
+
+- [bradautomates/claude-video](https://github.com/bradautomates/claude-video)（MIT，commit `03ceb42`）的 `skills/watch/scripts/frames.py`：參考了「場景偵測加均勻抽樣保底」和「與前一張保留的圖比對、去除近似重複畫面」兩個想法。`scripts/scan_frames.py` 是另外寫的，沒有複製它的程式碼；去重複的比對方式也不同（見 CHANGELOG）。
+- SenseVoice 語音辨識：透過 [k2-fsa/sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)（Apache-2.0）呼叫，模型由使用者自行下載，不包含在本 skill 裡。

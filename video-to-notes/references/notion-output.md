@@ -18,7 +18,7 @@
 | 影片長度 | text | `h:mm:ss` 或 `mm:ss` |
 | 發布日期 | date | `date:發布日期:start` 填 `YYYY-MM-DD`；不知道就不填 |
 | 標籤 | multi_select | 2 到 5 個主題標籤（例如 `LLM`、`作業系統`、`投資`），優先沿用資料庫已有的標籤 |
-| PDF | files | 上傳後 PDF 的 `file_upload_id`（JSON 陣列）；欄位填不進去就只放在頁面最後 |
+| PDF | files | 另外上傳一次 PDF，建好頁面後用 update-page 填（見下方「PDF 要上傳兩次」）；填不進去就只放在頁面最後 |
 
 **新標籤要先加進資料庫**：標籤欄只接受已存在的選項，直接填新的會報錯（`Invalid multi_select value`）。先 fetch data source 看現有選項；要用新標籤時，先用 update-data-source 把新選項加進「標籤」欄，再建頁面。
 | 建立日期 | created_time | 自動，不用填 |
@@ -61,6 +61,16 @@ Notion 的圖片和 PDF 要先上傳到 Notion，不能用本地路徑：
 3. 在頁面內容裡用回傳的 `markdown_source`：圖片寫 `<image source="<markdown_source>">圖說</image>`，PDF 寫 `<pdf source="<markdown_source>">PDF 講義</pdf>`。
 4. 上傳後沒放進頁面的檔案過一段時間會被刪，所以上傳完就盡快建頁面。
 
+### PDF 要上傳兩次
+
+**一次上傳只能用在一個地方。**同一個 `file_upload_id` 先放進頁面內容後，再拿來填 PDF 欄位會失敗（`File <id> not found`），反過來也一樣。所以：
+
+1. 第一次上傳的 PDF 放進頁面內容（`<pdf source="file-upload://…">`），建頁面時 `properties` **不要**放 PDF 欄位。
+2. 頁面建好後，再上傳一次同一個 PDF，用 update-page（`update_properties`）填欄位：
+   ```json
+   {"PDF": [{"type": "file_upload", "file_upload": {"id": "<第二次的 file_upload_id>"}}]}
+   ```
+
 限制與對策：
 
 - 單檔上限 20 MiB。PDF 太大時，先把筆記裡的截圖壓小（`magick in.png -resize 1600x\> -quality 85 out.jpg`）重新編譯；仍然太大，就在頁面寫明 PDF 的本地路徑，不附檔，並告訴使用者。
@@ -68,7 +78,7 @@ Notion 的圖片和 PDF 要先上傳到 Notion，不能用本地路徑：
 
 ## 建立頁面
 
-- 用 create-pages，parent 用上面的 data source，`properties` 填欄位，`content` 放頁面內容。
+- 用 create-pages，parent 用上面的 data source，`properties` 填欄位（PDF 欄位除外），`content` 放頁面內容。
 - 內容太長、一次送不完時：先建頁面放前幾節，再用 update-page 把後面的章節依序附加上去。
 - 建好後 fetch 一次，確認沒有 `truncated` 或缺漏的區塊，圖片和 PDF 都有出現。
 - 交付時給使用者這頁的連結。

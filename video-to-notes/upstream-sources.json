@@ -26,6 +26,26 @@
       "what": "youtube-render-pdf 與 bilibili-render-pdf 的講義寫作規則、截圖挑選與時間來源、長影片分段、Bilibili 字幕三級回退與分P處理，以及 LaTeX 範本（重點框配色與封面版面）",
       "reviewed_commit": "496fb3fa0e9845167db8a5eff2d86f5ffcc2eeb4",
       "reviewed_at": "2026-11-15"
+    },
+    {
+      "name": "claude-video",
+      "type": "github",
+      "repo": "https://github.com/bradautomates/claude-video",
+      "licence": "MIT",
+      "paths": [
+        {
+          "path": "skills/watch/scripts/frames.py",
+          "last_commit": "c1975ef3b1b74e721cecd4273d878af76b20687a",
+          "tree": "d8194e74c5f7a89f487b4a7202197d866d06ee4d"
+        }
+      ],
+      "used_in": [
+        "scripts/scan_frames.py",
+        "SKILL.md"
+      ],
+      "what": "抽圖的兩個想法：場景偵測加均勻抽樣保底、和前一張保留的圖比對來去除近似重複畫面。只借想法，沒有複製程式碼；去重複改成 64x36 灰階、計算變動像素比例，因為原作用 16x16 平均差，它自己的註解也說會漏掉細微的文字變化",
+      "reviewed_commit": "03ceb42f7fa2c4439aca01752118044baabffb8f",
+      "reviewed_at": "2026-11-15"
     }
   ]
 }

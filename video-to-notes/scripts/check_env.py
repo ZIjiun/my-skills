@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""檢查 video-to-notes 需要的工具和繁中字型。只讀取、不安裝任何東西。
+"""檢查 video-to-notes 需要的工具、中文 LaTeX 套件和繁中字型。只讀取、不安裝任何東西。
 
 用法：python scripts/check_env.py      （macOS／Linux 用 python3）
 """
@@ -17,8 +17,11 @@ TOOLS = [
     ("ffprobe", "讀本地影片資訊", "必要"),
     ("xelatex", "編譯 PDF", "要 PDF 就必要"),
     ("magick", "拼縮圖、裁切、壓縮圖片", "建議"),
-    ("whisper", "沒有字幕時語音轉文字", "沒字幕的影片才需要"),
+    ("whisper", "沒有字幕時語音轉文字（英文和其他語言）", "沒字幕的其他語言影片才需要"),
 ]
+
+# xelatex 在不代表範本能編譯：還要有這些中文套件
+LATEX_PACKAGES = ["ctex.sty", "xeCJK.sty", "zhnumber.sty"]
 
 # 範本依序嘗試的繁中字型（檔名關鍵字，小寫）
 FONT_HINTS = {
@@ -83,12 +86,39 @@ def main():
     missing_required = []
     for cmd, use, need in TOOLS:
         path = shutil.which(cmd)
+        if not path and cmd == "magick" and shutil.which("montage"):
+            print(f"  [OK]   magick   沒有 magick，但有 ImageMagick 6 的 montage／convert，可以用")
+            continue
         if path:
             print(f"  [OK]   {cmd:8s} {version(cmd)}")
         else:
             print(f"  [缺少] {cmd:8s} 用途：{use}（{need}）")
             if need in ("必要", "要 PDF 就必要"):
                 missing_required.append(cmd)
+
+    if shutil.which("xelatex"):
+        if shutil.which("kpsewhich"):
+            lost = []
+            for pkg in LATEX_PACKAGES:
+                try:
+                    out = subprocess.run(["kpsewhich", pkg], capture_output=True, text=True, timeout=30)
+                    if not out.stdout.strip():
+                        lost.append(pkg)
+                except Exception:
+                    lost.append(pkg)
+            if lost:
+                print(f"  [缺少] 中文 LaTeX 套件：{'、'.join(lost)}（不補裝第 7 步會失敗，見 references/setup.md「中文 LaTeX 套件」）")
+                missing_required.append("ctex/xeCJK")
+            else:
+                print("  [OK]   中文 LaTeX 套件：ctex、xeCJK、zhnumber")
+        else:
+            print("  [略過] 中文 LaTeX 套件：找不到 kpsewhich，無法檢查（MiKTeX 會在第一次編譯時自動下載）")
+
+    try:
+        import sherpa_onnx  # noqa: F401
+        print("  [OK]   sherpa-onnx（SenseVoice 語音轉文字，中日韓粵影片用；模型另外下載，見 scripts/transcribe_sensevoice.py）")
+    except Exception:
+        print("  [缺少] sherpa-onnx  用途：沒字幕的中日韓粵影片語音轉文字（pip install sherpa-onnx soundfile numpy）")
 
     fonts = find_fonts()
     print()
