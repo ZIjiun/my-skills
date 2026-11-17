@@ -32,3 +32,12 @@
 - **下載指令第一行固定 `yt-dlp -U`**：舊版 yt-dlp 常因網站改版下載失敗，使用者不用記得更新。
 - **語音轉文字改成 sherpa-onnx 一套跑兩種引擎**：`scripts/transcribe_sensevoice.py` 改名 `scripts/transcribe.py`，加 `--engine whisper`。原本的 openai-whisper 要從 OpenAI 下載模型，雲端連不到，英文影片沒字幕時會卡住；改用 GitHub 上 sherpa-onnx 轉好的 whisper large-v3-turbo。
 - **語言對照表修正**：原本寫 SenseVoice 不支援英文，錯了，它支援中英日韓粵。實測一段 33 秒的英文，兩者都轉對，SenseVoice 5 秒、whisper 63 秒，所以英文也改成 SenseVoice 優先，whisper 當備案；其他語言用 whisper。日文、韓文也實測過 whisper 自動判斷語言正常。
+
+## 2026-11-17
+
+實際用它整理 Bilibili 影片 BV13PVf6QEFN（5 分半，無字幕）後，使用者表示平常不需要 PDF：
+
+- **PDF 改成選配，開始前先問**：新增「開始前：問要不要 PDF」。要：照原流程產出 `.tex` 和 PDF、附進 Notion、填 PDF 欄位。不要：只做 Notion 頁面。使用者已經說明就不再問；沒人能回答時（排程執行）當作不要，並在交付時註明。
+- **不做 PDF 時初稿改寫成 `筆記.md`**：原本要寫 `.tex` 一次、再轉成 Notion 格式寫一次，等於整份內容寫兩遍。現在直接用 Notion 格式寫 `筆記.md`，審查 agent 對照它找漏，審完直接寫進 Notion。寫作規則不變，LaTeX 名稱對應到 notion-output.md 的格式。
+- **`check_env.py` 加 `--pdf`**：預設不再檢查 xelatex、中文 LaTeX 套件和繁中字型，也不會因為沒裝 xelatex 回報「缺少必要工具」；要 PDF 時加 `--pdf` 才檢查。
+- setup.md、notion-output.md、local-video.md 裡只跟 PDF 有關的步驟都標明「只在要 PDF 時」。

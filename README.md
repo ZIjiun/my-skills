@@ -5,7 +5,7 @@
 | Skill | 用途 |
 |---|---|
 | [coworker-reply-coach](./coworker-reply-coach/SKILL.md) | 回覆同事訊息的教練：判斷狀況、承接情緒、給草稿並說明原因 |
-| [video-to-notes](./video-to-notes/SKILL.md) | 把 YouTube、Bilibili、本地影片整理成附截圖與時間戳的繁中講義，輸出 PDF 並寫進 Notion |
+| [video-to-notes](./video-to-notes/SKILL.md) | 把 YouTube、Bilibili、本地影片整理成附截圖與時間戳的繁中筆記，寫進 Notion；要的話另外輸出 PDF 講義 |
 
 每個 skill 資料夾裡：
 

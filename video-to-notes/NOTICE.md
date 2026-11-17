@@ -17,7 +17,7 @@
 | 字型 | fandol（缺許多繁體字） | 自動挑選 Noto CJK TC／微軟正黑體／新細明體／宋體-繁／蘋方-繁 |
 | 時間戳 | 只有截圖頁尾註腳 | 新增 `\ts`、`\tsrange`；小節、重點、截圖、對話都標時間；線上影片可點擊跳轉 |
 | 補漏 | README 建議另外追問 | 寫進流程：獨立審查 agent 對照字幕，只回報不修改，最多 5 輪 |
-| 輸出 | `.tex`＋PDF | 另外寫進 Notion「影片筆記」資料庫（原生頁面＋附 PDF） |
+| 輸出 | `.tex`＋PDF | 寫進 Notion「影片筆記」資料庫（原生頁面）；`.tex`＋PDF 改成選配，開始前先問使用者（2026-11-17） |
 | 環境檢查 | 無 | 新增 `scripts/check_env.py`、`references/setup.md` |
 | 平台 | Codex（`agents/openai.yaml`） | Claude Code／Cowork；未附 openai.yaml |
 

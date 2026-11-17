@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""檢查 video-to-notes 需要的工具、中文 LaTeX 套件和繁中字型。只讀取、不安裝任何東西。
+"""檢查 video-to-notes 需要的工具。只讀取、不安裝任何東西。
 
-用法：python scripts/check_env.py      （macOS／Linux 用 python3）
+用法：python scripts/check_env.py         只做 Notion 筆記（macOS／Linux 用 python3）
+      python scripts/check_env.py --pdf   要 PDF 講義：另外檢查 xelatex、中文 LaTeX 套件和繁中字型
 """
 import glob
 import os
@@ -15,7 +16,6 @@ TOOLS = [
     ("yt-dlp", "下載線上影片、封面、字幕", "線上影片必要"),
     ("ffmpeg", "抽截圖、抽音訊、轉字幕", "必要"),
     ("ffprobe", "讀本地影片資訊", "必要"),
-    ("xelatex", "編譯 PDF", "要 PDF 就必要"),
     ("magick", "拼縮圖、裁切、壓縮圖片", "建議"),
 ]
 
@@ -81,6 +81,7 @@ def find_fonts():
 
 
 def main():
+    want_pdf = "--pdf" in sys.argv[1:]
     print(f"系統：{platform.system()} {platform.release()}，Python {sys.version.split()[0]}\n")
     missing_required = []
     for cmd, use, need in TOOLS:
@@ -92,10 +93,16 @@ def main():
             print(f"  [OK]   {cmd:8s} {version(cmd)}")
         else:
             print(f"  [缺少] {cmd:8s} 用途：{use}（{need}）")
-            if need in ("必要", "要 PDF 就必要"):
+            if need == "必要":
                 missing_required.append(cmd)
 
-    if shutil.which("xelatex"):
+    if not want_pdf:
+        print("  [略過] xelatex、中文 LaTeX 套件、繁中字型：這次不做 PDF（要 PDF 時加 --pdf 再檢查）")
+    elif not shutil.which("xelatex"):
+        print("  [缺少] xelatex  用途：編譯 PDF（要 PDF 就必要）")
+        missing_required.append("xelatex")
+    else:
+        print(f"  [OK]   xelatex  {version('xelatex')}")
         if shutil.which("kpsewhich"):
             lost = []
             for pkg in LATEX_PACKAGES:
@@ -119,12 +126,13 @@ def main():
     except Exception:
         print("  [缺少] sherpa-onnx  用途：沒字幕的影片語音轉文字（pip install sherpa-onnx soundfile numpy）")
 
-    fonts = find_fonts()
-    print()
-    if fonts:
-        print("  [OK]   繁中字型：" + "、".join(fonts))
-    else:
-        print("  [缺少] 繁中字型：找不到，PDF 會改用 FandolSong，部分繁體字可能缺字。")
+    if want_pdf:
+        fonts = find_fonts()
+        print()
+        if fonts:
+            print("  [OK]   繁中字型：" + "、".join(fonts))
+        else:
+            print("  [缺少] 繁中字型：找不到，PDF 會改用 FandolSong，部分繁體字可能缺字。")
 
     print()
     if missing_required:

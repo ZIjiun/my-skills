@@ -6,12 +6,12 @@
 |---|---|---|
 | yt-dlp | 下載 YouTube／Bilibili 的影片、封面、字幕 | 線上影片要 |
 | ffmpeg（含 ffprobe） | 抽截圖、抽音訊、讀本地影片資訊和字幕 | 要 |
-| xelatex（TeX Live 或 MiKTeX） | 編譯 PDF | 要 PDF 就要 |
+| xelatex（TeX Live 或 MiKTeX） | 編譯 PDF 講義 | 只有要 PDF 才要 |
 | ImageMagick（magick） | 拼縮圖總覽、裁切、壓縮圖片 | 建議 |
 | sherpa-onnx＋語音模型（SenseVoice、whisper） | 沒字幕時語音轉文字 | 沒字幕的影片才要 |
 | Python 3 | 跑語音轉文字和檢查腳本 | 要 |
 
-裝完後**重開終端機**（或重開 Claude 桌面版），再執行 `python scripts/check_env.py` 確認。
+裝完後**重開終端機**（或重開 Claude 桌面版），再執行 `python scripts/check_env.py` 確認（會做 PDF 講義的話加 `--pdf`，一併檢查 xelatex、中文套件和字型）。
 
 ## Windows（用 winget，在 PowerShell 執行）
 
@@ -20,10 +20,10 @@ winget install --id Python.Python.3.12 -e
 winget install --id yt-dlp.yt-dlp -e
 winget install --id Gyan.FFmpeg -e
 winget install --id ImageMagick.ImageMagick -e
-winget install --id MiKTeX.MiKTeX -e
+winget install --id MiKTeX.MiKTeX -e   # 只有要 PDF 講義才需要
 ```
 
-- **TeX**：MiKTeX 比較小，缺的套件會在第一次編譯時自動下載（第一次會比較久）。打開「MiKTeX Console」→ Settings，把「Install missing packages on-the-fly」設成 **Always**，不然編譯時會跳視窗卡住。想一次裝齊可改裝 TeX Live（`winget install --id TeXLive.TeXLive -e`，約 8 GB）。
+- **TeX**（只有要 PDF 講義才需要）：MiKTeX 比較小，缺的套件會在第一次編譯時自動下載（第一次會比較久）。打開「MiKTeX Console」→ Settings，把「Install missing packages on-the-fly」設成 **Always**，不然編譯時會跳視窗卡住。想一次裝齊可改裝 TeX Live（`winget install --id TeXLive.TeXLive -e`，約 8 GB）。
 - **字型**：Windows 內建「微軟正黑體」和「新細明體」，範本會自動使用，不用另外裝。想要更好看的明體可以裝 Noto Serif CJK TC（Google Fonts 下載，右鍵「為所有使用者安裝」）。
 - **語音轉文字**（只有沒字幕的影片才需要）：
   ```powershell
@@ -50,7 +50,7 @@ winget install --id MiKTeX.MiKTeX -e
 
 ```bash
 brew install python yt-dlp ffmpeg imagemagick
-brew install --cask mactex-no-gui
+brew install --cask mactex-no-gui   # 只有要 PDF 講義才需要
 pip3 install sherpa-onnx soundfile numpy   # 語音轉文字；模型網址見 scripts/transcribe.py
 ```
 
@@ -59,7 +59,7 @@ pip3 install sherpa-onnx soundfile numpy   # 語音轉文字；模型網址見 s
 
 ## 中文 LaTeX 套件（ctex、xeCJK）
 
-範本需要 ctex 和 xeCJK。`check_env.py` 回報缺少時：
+只有要 PDF 講義時才需要。範本需要 ctex 和 xeCJK，`check_env.py --pdf` 回報缺少時：
 
 - **MiKTeX**：第一次編譯會自動下載，不用另外處理（記得把「Install missing packages on-the-fly」設成 Always）。
 - **TeX Live**：`tlmgr install ctex xecjk zhnumber`。

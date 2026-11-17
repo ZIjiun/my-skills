@@ -18,14 +18,14 @@
 | 影片長度 | text | `h:mm:ss` 或 `mm:ss` |
 | 發布日期 | date | `date:發布日期:start` 填 `YYYY-MM-DD`；不知道就不填 |
 | 標籤 | multi_select | 2 到 5 個主題標籤（例如 `LLM`、`作業系統`、`投資`），優先沿用資料庫已有的標籤 |
-| PDF | files | 另外上傳一次 PDF，建好頁面後用 update-page 填（見下方「PDF 要上傳兩次」）；填不進去就只放在頁面最後 |
+| PDF | files | 只在要 PDF 時填。另外上傳一次 PDF，建好頁面後用 update-page 填（見下方「PDF 要上傳兩次」）；填不進去就只放在頁面最後 |
 
 **新標籤要先加進資料庫**：標籤欄只接受已存在的選項，直接填新的會報錯（`Invalid multi_select value`）。先 fetch data source 看現有選項；要用新標籤時，先用 update-data-source 把新選項加進「標籤」欄，再建頁面。
 | 建立日期 | created_time | 自動，不用填 |
 
 ## 頁面內容（Notion-flavored Markdown）
 
-寫之前讀一次 Notion connector 的 Markdown 規格（fetch `notion://docs/notion-flavored-markdown-spec`），不要自己發明語法。內容就是 `.tex` 筆記的 Notion 版本，**不要只放摘要**：
+寫之前讀一次 Notion connector 的 Markdown 規格（fetch `notion://docs/notion-flavored-markdown-spec`），不要自己發明語法。內容就是初稿的 Notion 版本（不做 PDF 時就是 `筆記.md` 本身；要 PDF 時由 `.tex` 轉過來），**不要只放摘要**：
 
 - 頁首：一個 `<callout icon="🎬" color="gray_bg">`，寫來源、講者、長度、影片連結；接著放封面圖；再放 `<table-of-contents />`。
 - `\section` → `## 標題`，`\subsection` → `### 標題`；小節標題下第一行放時間區間。
@@ -40,7 +40,7 @@
   框的標題放在 callout 第一行加粗。
 - 表格用 pipe table。
 - 圖：每張圖自己一個區塊，圖說放在 image 的 caption，caption 結尾附時間戳。
-- 最後一節「總結與延伸」之後，加一段 `---`，再放 PDF 區塊。
+- 要 PDF 時：最後一節「總結與延伸」之後，加一段 `---`，再放 PDF 區塊。不做 PDF 就不放。
 
 ### 時間戳
 
@@ -61,7 +61,7 @@ Notion 的圖片和 PDF 要先上傳到 Notion，不能用本地路徑：
 3. 在頁面內容裡用回傳的 `markdown_source`：圖片寫 `<image source="<markdown_source>">圖說</image>`，PDF 寫 `<pdf source="<markdown_source>">PDF 講義</pdf>`。
 4. 上傳後沒放進頁面的檔案過一段時間會被刪，所以上傳完就盡快建頁面。
 
-### PDF 要上傳兩次
+### PDF 要上傳兩次（只在要 PDF 時）
 
 **一次上傳只能用在一個地方。**同一個 `file_upload_id` 先放進頁面內容後，再拿來填 PDF 欄位會失敗（`File <id> not found`），反過來也一樣。所以：
 
@@ -80,5 +80,5 @@ Notion 的圖片和 PDF 要先上傳到 Notion，不能用本地路徑：
 
 - 用 create-pages，parent 用上面的 data source，`properties` 填欄位（PDF 欄位除外），`content` 放頁面內容。
 - 內容太長、一次送不完時：先建頁面放前幾節，再用 update-page 把後面的章節依序附加上去。
-- 建好後 fetch 一次，確認沒有 `truncated` 或缺漏的區塊，圖片和 PDF 都有出現。
+- 建好後 fetch 一次，確認沒有 `truncated` 或缺漏的區塊，圖片都有出現（要 PDF 時也確認 PDF 有出現）。
 - 交付時給使用者這頁的連結。

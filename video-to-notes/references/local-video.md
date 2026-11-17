@@ -45,7 +45,7 @@ ffprobe -v quiet -print_format json -show_format -show_streams "<影片>" > meta
 
 ## 5. 時間戳
 
-- `\videotimeprefix` 留空，`\videourl` 留空，`\videofile` 填檔名（不含使用者的完整路徑，避免把個人資料夾結構印在 PDF 上）。
+- 要 PDF 時：`\videotimeprefix` 留空，`\videourl` 留空，`\videofile` 填檔名（不含使用者的完整路徑，避免把個人資料夾結構印在 PDF 上）。
 - 時間戳顯示成 `[12:31]`，不做連結。
 - Notion 裡寫成 `⏱ 12:31`（見 notion-output.md）。
 
