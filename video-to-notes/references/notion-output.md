@@ -80,5 +80,6 @@ Notion 的圖片和 PDF 要先上傳到 Notion，不能用本地路徑：
 
 - 用 create-pages，parent 用上面的 data source，`properties` 填欄位（PDF 欄位除外），`content` 放頁面內容。
 - 內容太長、一次送不完時：先建頁面放前幾節，再用 update-page 把後面的章節依序附加上去。
-- 建好後 fetch 一次，確認沒有 `truncated` 或缺漏的區塊，圖片都有出現（要 PDF 時也確認 PDF 有出現）。
+- 每次 create-pages／update-page 之後看回應：有 `warnings`、錯誤或非同步任務（`async_task`，先用 get-async-task 等到成功）時，才 fetch 頁面，確認沒有 `truncated`、`unknown_block_count` 或缺漏的區塊，圖片都有出現（要 PDF 時也確認 PDF 有出現），有問題就修。
+- 回應沒有警告就不用整頁讀回（Notion 工具說明也這樣建議：寫入沒有警告時不要只為了確認而 fetch）。
 - 交付時給使用者這頁的連結。

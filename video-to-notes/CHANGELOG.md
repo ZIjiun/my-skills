@@ -41,3 +41,13 @@
 - **不做 PDF 時初稿改寫成 `筆記.md`**：原本要寫 `.tex` 一次、再轉成 Notion 格式寫一次，等於整份內容寫兩遍。現在直接用 Notion 格式寫 `筆記.md`，審查 agent 對照它找漏，審完直接寫進 Notion。寫作規則不變，LaTeX 名稱對應到 notion-output.md 的格式。
 - **`check_env.py` 加 `--pdf`**：預設不再檢查 xelatex、中文 LaTeX 套件和繁中字型，也不會因為沒裝 xelatex 回報「缺少必要工具」；要 PDF 時加 `--pdf` 才檢查。
 - setup.md、notion-output.md、local-video.md 裡只跟 PDF 有關的步驟都標明「只在要 PDF 時」。
+
+## 2026-11-19（省 token 第一批）
+
+同樣的品質要求下減少 token 用量。主要浪費在「同樣的東西被讀很多遍」：
+
+- **審查迴圈改成 1 輪全面＋最多 2 輪複查**（原本最多 5 輪，每輪都重讀全部字幕、總覽圖和初稿）。第 2 輪起由同一個審查 agent 接續，只檢查上一輪回報的項目有沒有補好。
+- **新增 `scripts/compact_subs.py`**：字幕先壓成每句一行的 `subs.txt`（`[12:31] 這句話`），去掉 SRT 的編號和結束時間，每句保留自己的開始時間；合併 YouTube 自動字幕滾動重複的句子（做法參考 claude-video）。寫筆記和審查都讀這份。
+- **Notion 寫入後不再一律整頁讀回**：回應有警告、錯誤時才 fetch 檢查（Notion 工具說明的建議）。格式規格照樣每次讀，跟著官方更新。
+- **SKILL.md 瘦身**：線上影片下載、Bilibili 注意事項搬到 `references/online-video.md`，語音轉文字搬到 `references/transcribe.md`，編譯 PDF 搬到 `references/pdf.md`，用到才讀。內容沒有刪減。
+

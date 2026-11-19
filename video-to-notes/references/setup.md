@@ -41,7 +41,7 @@ winget install --id MiKTeX.MiKTeX -e   # 只有要 PDF 講義才需要
   curl.exe -L -o yt-dlp.exe https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe
   .\yt-dlp.exe --version
   ```
-- **ffmpeg**：只是要下載影片的話可以不裝，影像和聲音分開抓（見 SKILL.md 第 2 步「下載不到時」）。要在這台電腦上抽截圖才需要，到 https://www.gyan.dev/ffmpeg/builds/ 下載 release essentials 的 zip，解壓後把 `bin` 資料夾加進 PATH。
+- **ffmpeg**：只是要下載影片的話可以不裝，影像和聲音分開抓（見 `references/online-video.md`「下載不到時」）。要在這台電腦上抽截圖才需要，到 https://www.gyan.dev/ffmpeg/builds/ 下載 release essentials 的 zip，解壓後把 `bin` 資料夾加進 PATH。
 - 其他工具到各自官網下載安裝程式（Python：python.org；MiKTeX：miktex.org；ImageMagick：imagemagick.org）。
 
 ## macOS（用 Homebrew，在「終端機」執行）
@@ -87,7 +87,7 @@ pip3 install sherpa-onnx soundfile numpy   # 語音轉文字；模型網址見 s
 
 - **yt-dlp 下載失敗**：先 `yt-dlp -U`（winget 安裝的用 `winget upgrade yt-dlp.yt-dlp`）。YouTube 常改版，舊版很容易壞。
 - **Bilibili 畫質**：不登入通常也有一般 1080P，先用 `-F` 看。只拿到 480P／720P、或要字幕時，可加 `--cookies-from-browser chrome`（會讀 Chrome 的登入資料，要先同意；要先完全關掉 Chrome，讀不到時改用 Firefox）。
-- **雲端環境下載被擋**（`403`、`Unable to connect to proxy`）：不是暫時性錯誤，改在使用者電腦下載，見 SKILL.md 第 2 步「下載不到時」。
+- **雲端環境下載被擋**（`403`、`Unable to connect to proxy`）：不是暫時性錯誤，改在使用者電腦下載，見 `references/online-video.md`「下載不到時」。
 - **編譯出現 Missing character**：字型缺字。確認 check_env.py 有找到繁中字型。
 - **whisper 很慢**：處理時間約是音訊長度的 2 倍。中日韓粵英影片改用 SenseVoice；其他語言只能等，或先只轉需要的片段。
 - **連不到 Hugging Face 或 OpenAI 的模型網址**（雲端環境常見）：本 skill 的模型都從 GitHub 下載，不受影響。
