@@ -51,3 +51,9 @@
 - **Notion 寫入後不再一律整頁讀回**：回應有警告、錯誤時才 fetch 檢查（Notion 工具說明的建議）。格式規格照樣每次讀，跟著官方更新。
 - **SKILL.md 瘦身**：線上影片下載、Bilibili 注意事項搬到 `references/online-video.md`，語音轉文字搬到 `references/transcribe.md`，編譯 PDF 搬到 `references/pdf.md`，用到才讀。內容沒有刪減。
 
+## 2026-11-20（省 token 第二批）
+
+- **Gemini 讀總覽圖**：新增 `scripts/index_sheets.py`（用 Antigravity CLI `agy`，固定 `gemini-4-neon-medium`）把總覽圖讀成文字索引 `sheet_index.md`，Claude 和審查者讀索引、不再把幾十張總覽圖放進對話。Gemini 只找位置；寫進筆記的數字、小字、截圖一律由 Claude 從原解析度截圖確認。
+- **`scripts/check_index.py`**：用腳本核對索引有沒有漏格，不靠 AI。
+- 只在使用者自己的電腦有 `agy`、而且同意把畫面傳給 Google 時才用；否則照第一批的做法。細節和限制見 `references/gemini-index.md`。
+
