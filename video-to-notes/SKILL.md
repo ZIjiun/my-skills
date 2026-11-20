@@ -36,7 +36,7 @@ description: 把 YouTube、Bilibili 或電腦上的影片檔整理成繁體中�
 
 - **在雲端環境缺工具：自己裝，不用問。**雲端的工作環境每個對話都是新的，上次裝的都不在，這是正常的。直接補齊：`pip install yt-dlp sherpa-onnx soundfile numpy opencc`（pip 要加 `--break-system-packages`）、需要的語音模型（網址在 `scripts/transcribe.py` 開頭）；要 PDF 時，缺 ctex／xeCJK 就照 `references/setup.md`「中文 LaTeX 套件」的原始碼建置。
 - **在使用者自己的電腦缺工具**（Claude Code，或下面第 2 步請使用者下載時）：照 `references/setup.md` 告訴使用者怎麼裝（Windows 用 winget，沒有 winget 時改下載單一執行檔；macOS 用 Homebrew），不要自己替使用者安裝系統軟體。
-- 語音轉文字的套件和模型只有沒字幕的影片才需要（見「語音轉文字」），有字幕時不用準備。
+- 語音轉文字的套件和模型只有沒字幕的影片才需要（見 `references/transcribe.md`），有字幕時不用準備。
 - 只在要 PDF 時：缺 xelatex 仍可做 Notion 頁面，但要明講這次沒有 PDF。xelatex 在但缺 ctex／xeCJK：照 `references/setup.md`「中文 LaTeX 套件」補裝，否則第 7 步一定失敗。
 
 **這個 skill 可能跑在哪裡**：Claude 桌面版／App 的對話，指令其實在雲端環境執行，常常連不到 Bilibili、YouTube 和 Hugging Face；使用者的電腦另外透過連結的資料夾存取。Claude Code 則直接在使用者電腦上執行。第 2 步的下載方式依這點決定。
@@ -47,88 +47,32 @@ description: 把 YouTube、Bilibili 或電腦上的影片檔整理成繁體中�
 
 | 輸入 | 來源 | 細節 |
 |---|---|---|
-| `youtube.com/watch?v=`、`youtu.be/`、`youtube.com/live/` | YouTube | 本檔「線上影片」 |
-| `bilibili.com/video/BV…`、`b23.tv/…` | Bilibili | 本檔「線上影片」＋「Bilibili 注意事項」 |
+| `youtube.com/watch?v=`、`youtu.be/`、`youtube.com/live/` | YouTube | `references/online-video.md` |
+| `bilibili.com/video/BV…`、`b23.tv/…` | Bilibili | `references/online-video.md`（含 Bilibili 注意事項） |
 | 電腦上的路徑（`.mp4 .mkv .mov .webm .avi .m4v` 等） | 本地影片 | `references/local-video.md` |
 
 Windows 路徑含空白或中文時，命令列一律加引號。
 
 ## 第 2 步：取得素材
 
-### 線上影片
+- **線上影片**（YouTube、Bilibili）：照 `references/online-video.md`（下載、封面、字幕、下載不到時的做法、Bilibili 注意事項）。
+- **本地影片**：照 `references/local-video.md`。
+- **沒有字幕**：照 `references/transcribe.md` 語音轉文字。
 
-1. 先看 metadata：`yt-dlp -J "<URL>" > meta.json`。記下標題、頻道、上傳日期、長度、章節、縮圖、可用字幕。
-2. **封面**：從 metadata 取最高解析度的縮圖存到本地（`yt-dlp --write-thumbnail --skip-download --convert-thumbnails jpg`），封面頁引用這個檔。有官方封面時不要用隨便一張畫面代替。
-3. **字幕**（保留時間戳，先別壓成純文字）：
-   - 人工字幕優先於自動字幕。
-   - 語言優先順序：影片原本的語言 → `zh-Hant`／`zh-TW` → `zh-Hans`／`zh` → 英文。
-   - `yt-dlp --write-subs --write-auto-subs --sub-langs "<語言>" --convert-subs srt --skip-download -o "subs" "<URL>"`
-   - 都沒有字幕：抽音訊後語音轉文字（見下方「語音轉文字」）。
-4. **影片**：探測格式，下載實際能下載的最高解析度，用來截圖：`yt-dlp -F "<URL>"` 後 `yt-dlp -f "bv*+ba/b" -o "video.%(ext)s" "<URL>"`。
-
-### 下載不到時（依序試）
-
-雲端環境常被擋（錯誤像 `Tunnel connection failed: 403`、`Unable to connect to proxy`）。被擋不是暫時的，換指令重試沒有用，直接往下一層：
-
-1. **在這裡直接下載**（上面的指令）。
-2. **在使用者電腦上下載，我自己執行**：有能在使用者電腦執行指令的工具（例如 `device_bash`）時，先請使用者連結一個資料夾，在那裡執行下面第 3 層的指令，再把檔案帶進工作資料夾。
-3. **請使用者自己下載**：上面兩層都不行時，給他可以直接貼上的指令，下載完請他在桌面版按「Add folder」連結資料夾，再讀進來。
-   - 沒有 yt-dlp 時，Windows 可以不安裝，直接下載單一執行檔到該資料夾：`curl.exe -L -o yt-dlp.exe https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe`，之後指令開頭寫 `.\yt-dlp.exe`（PowerShell 執行目前資料夾的程式一定要加 `.\`）。沒有 winget 的電腦也適用。
-   - **給使用者的每一段指令，第一行固定放更新**：`.\yt-dlp.exe -U`（用 winget 或 Homebrew 裝的寫 `yt-dlp -U`）。Bilibili、YouTube 常改版，舊版容易下載失敗；放在第一行，使用者整段貼上就會先更新，不用記。
-   - 先跑 `-F` 列格式，再**影像、聲音分開下載**，使用者電腦就不需要 ffmpeg，合併在這裡做：
-     ```
-     .\yt-dlp.exe -U
-     .\yt-dlp.exe -F "<URL>"
-     ```
-     看完格式後：
-     ```
-     .\yt-dlp.exe -U
-     .\yt-dlp.exe -f "<影像格式ID>,<聲音格式ID>" --write-info-json --write-thumbnail --write-subs --write-auto-subs --sub-langs "<語言>" -o "video.f%(format_id)s.%(ext)s" "<URL>"
-     ```
-     讀進來後合併：`ffmpeg -i video.f<影像>.mp4 -i video.f<聲音>.m4a -c copy video.mp4`。
-   - 下載中斷（`Connection reset`）yt-dlp 會自己續傳；聲音檔出現 `HTTP Error 567` 多半是連結過期，單獨重抓聲音即可。
-   - 單一檔案超過約 400MB 帶不進來時，改抓 720P。
-
-### Bilibili 注意事項
-
-- 畫質：不登入通常也拿得到一般 1080P，要登入的是「1080P 高碼率」（大會員）和字幕。先看 `-F` 的結果再決定。只拿到 480P／720P、或需要字幕時，請使用者自己決定要不要加 `--cookies-from-browser chrome`（會讀瀏覽器登入資料，**一定先問**；要先完全關掉 Chrome，讀不到時改用 Firefox）。
-- **分P 影片**：先列出所有分P，問使用者要做哪幾P；網址加 `?p=N` 指定。
-- 字幕：先試 CC 字幕（`zh-Hans,zh-CN,zh,ai-zh`，沒登入通常拿不到），沒有就語音轉文字，再不行就只靠畫面。
-- 彈幕不當作教學內容來源。
-- 「一鍵三連」「投幣關注」這類頻道宣傳不寫進筆記。
-
-### 語音轉文字（沒有字幕時）
-
-先抽音訊：`ffmpeg -i "<影片或音訊>" -vn -ac 1 -ar 16000 audio.wav`。用 `scripts/transcribe.py`，依影片語言選引擎：
-
-| 影片語言 | 第一選擇 | 備案 |
-|---|---|---|
-| 中文、粵語、日文、韓文 | SenseVoice | whisper |
-| 英文 | SenseVoice | whisper（腔調重、術語多、SenseVoice 轉出來錯很多時） |
-| 其他語言（法文、西班牙文等） | whisper | 沒有（SenseVoice 不支援） |
+**拿到字幕後先壓成精簡版**，之後寫筆記和審查都讀這份，不直接讀 SRT（SRT 的編號和「00:12:31,000 --> 00:12:34,500」佔的 token 和字幕內容差不多）：
 
 ```
-python scripts/transcribe.py audio.wav <模型資料夾> subs.srt --engine sensevoice --lang auto
-python scripts/transcribe.py audio.wav <模型資料夾> subs.srt --engine whisper --lang auto
+python scripts/compact_subs.py subs.srt subs.txt
 ```
 
-- 兩種引擎都透過 sherpa-onnx 執行，模型都放在 GitHub（網址在腳本開頭）。OpenAI 官方和 Hugging Face 的模型網址在雲端環境連不到，所以不用 `pip install openai-whisper` 那一套。
-- **SenseVoice**：很快，一般電腦或雲端都是幾分鐘的影片幾秒到幾十秒轉完，會自動加標點。模型約 1GB。
-- **whisper**（large-v3-turbo，約 560MB）：自動判斷語言，支援的語言最多，但慢很多。實測雲端 2 核心時，處理時間約是音訊長度的 2 倍（33 秒的英文花 63 秒；SenseVoice 花 5 秒），超過 20 分鐘的影片先告訴使用者大約要多久。
-- 時間戳以語音段落為單位（每段最長約 12 秒），找截圖和標時間戳夠用。
-- 使用者自己的電腦已經裝好 openai-whisper、又有 NVIDIA 顯示卡時（Claude Code），也可以直接用它：`whisper audio.wav --model medium --output_format srt --output_dir .`。
-
-**兩個都要注意**：
-
-- 輸出多半是簡體，而且會聽錯人名、英文縮寫和術語（例如 SCR 聽成「SC2」、deck 聽成「dck」）。寫筆記時對照畫面上的文字和燒進影片的字幕校正，講者名字以畫面或頻道資訊為準。
-- 音質太差、轉出來不能用：改用「只看畫面」模式，從第 4 步的總覽圖整理。
+`subs.txt` 每句一行、保留該句的開始時間（`[12:31] 這句話`），也會合併 YouTube 自動字幕重複出現的句子。原始 SRT 留著備查（例如要確認某句的結束時間）。
 
 ## 第 3 步：長影片分段
 
 影片超過 20 分鐘或字幕超過 300 條時，不要一次處理：
 
 - 優先按章節（或分P）切；沒有章節就按連貫的時間區間切，相鄰段落留一點重疊。
-- 有 subagent 時，平行派給多個 subagent，每個負責一段，回傳：這段的教學目標、核心論點、重要公式或程式碼、需要的截圖與**時間區間**、需要整合時決定的疑點。
+- 有 subagent 時，平行派給多個 subagent，每個負責一段（只給它那段的 `subs.txt` 內容，不給總覽圖；畫面由主流程看），回傳：這段的教學目標、核心論點、重要公式或程式碼、需要的截圖與**時間區間**、需要整合時決定的疑點。
 - 主流程把各段整合成**一份**大綱和一條連貫的敘事，讀起來像一份講義，不是拼起來的摘要。
 
 ## 第 4 步：截圖
@@ -222,27 +166,22 @@ python scripts/scan_frames.py video.mp4 frames_scan
 
 AI 整理常見的問題是漏掉內容。初稿（`筆記.md` 或 `.tex`）寫完、**定稿之前**：
 
-1. 開一個**獨立的審查 agent**（Claude Code／Cowork 用 Agent／Task 工具；它看不到你的對話，所以要把檔案路徑寫清楚）。給它的指示：
+1. **第 1 輪：全面審查。**開一個**獨立的審查 agent**（Claude Code／Cowork 用 Agent／Task 工具；它看不到你的對話，所以要把檔案路徑寫清楚）。這是唯一一次從頭到尾比對，後面幾輪不會再全面重找，所以這輪要找完整。給它的指示：
 
-   > 你是審查者。讀原始字幕 `<字幕檔路徑>`、畫面總覽圖 `<frames_scan/sheet_*.jpg>`（用讀圖工具實際看）、畫面段落清單 `<frames_scan/segments.txt>`，以及筆記 `<初稿路徑>`。字幕是語音辨識產生時，會有聽錯的人名、英文縮寫和術語，以畫面上的文字為準。逐段比對，找出：(1) 筆記漏掉的資訊：重要論點、具體細節（數字、條件、步驟、例子、反例）、有趣或有啟發的說法、講者特別強調的地方；(2) 只出現在畫面上、有教學價值但筆記沒寫的內容，以及有沒有哪個畫面段落被跳過；(3) 時間戳和字幕差超過約 3 秒的地方；(4) 筆記說了但影片沒講、又沒標明是補充的內容。**只回報，不要修改任何檔案。**每一項寫：字幕或畫面的時間區間、漏了或錯了什麼、建議放在筆記哪一節、重要程度（高／中／低）。如果你認為筆記已經完整，只回覆「已完備」並說明理由。
+   > 你是審查者。讀字幕 `<subs.txt 路徑>`、畫面總覽圖 `<frames_scan/sheet_*.jpg>`（用讀圖工具實際看）、畫面段落清單 `<frames_scan/segments.txt>`，以及筆記 `<初稿路徑>`。字幕是語音辨識產生時，會有聽錯的人名、英文縮寫和術語，以畫面上的文字為準。逐段比對，找出：(1) 筆記漏掉的資訊：重要論點、具體細節（數字、條件、步驟、例子、反例）、有趣或有啟發的說法、講者特別強調的地方；(2) 只出現在畫面上、有教學價值但筆記沒寫的內容，以及有沒有哪個畫面段落被跳過；(3) 時間戳和字幕差超過約 3 秒的地方；(4) 筆記說了但影片沒講、又沒標明是補充的內容。**只回報，不要修改任何檔案。**每一項寫：字幕或畫面的時間區間、漏了或錯了什麼、建議放在筆記哪一節、重要程度（高／中／低）。如果你認為筆記已經完整，只回覆「已完備」並說明理由。
 
-2. 主流程依回報補進初稿（照樣遵守寫作和時間戳規則）。判斷某項不該加（例如閒聊、重複）可以不加，但要記下理由。
-3. 把補好的版本再交給審查 agent（同一個 agent 繼續，或開新的並附上前幾輪紀錄），重複直到它回「已完備」。
-4. 最多跑 **5 輪**。5 輪後仍有回報，就停下，在交付時列出還沒處理的項目讓使用者決定。
-5. 長影片可以每段各派一個審查 agent，最後再整體審一次。
+2. 主流程依回報補進初稿（照樣遵守寫作和時間戳規則）。判斷某項不該加（例如閒聊、重複）可以不加，但要記下理由。每一項記下處理結果：補在哪一節、補了什麼，或為什麼不補。
+3. **第 2 輪起：只複查。**讓**同一個**審查 agent 繼續（用 SendMessage 之類的工具接續對話；它已經讀過字幕和總覽圖，不用重讀）。只給它上一輪的回報清單和每項的處理結果，請它：
+   > 逐項檢查：補上的內容是否正確、完整，時間戳和字幕是否對得上（需要時只回頭查那幾段字幕或畫面）；不補的理由是否成立。也看補上的段落有沒有寫錯別的地方。**不要重新從頭比對整份筆記，只回報，不要修改任何檔案。**都沒問題就回覆「已完備」。
+
+   沒辦法接續同一個 agent 時，開新的，給它：上一輪回報清單、處理結果，以及這些項目對應的字幕時間區間，同樣只做複查，不重讀全部字幕和總覽圖。
+4. 最多跑 **3 輪**（1 輪全面＋最多 2 輪複查）。3 輪後仍有回報，就停下，在交付時列出還沒處理的項目讓使用者決定。
+5. 長影片可以每段各派一個審查 agent 做第 1 輪（每個只拿自己那段的 `subs.txt` 和總覽圖），複查也由各自的 agent 做。
 6. 沒有 subagent 工具的環境（例如 claude.ai）：自己另做一輪「只對照字幕找漏」的檢查，照上面的格式列清單再補，並告訴使用者這次不是獨立 agent 審查。
 
 ## 第 7 步：編譯 PDF（只在要 PDF 時）
 
-```
-xelatex -interaction=nonstopmode "<檔名>.tex"
-xelatex -interaction=nonstopmode "<檔名>.tex"
-```
-
-- 跑兩次讓目錄和連結正確。有錯就看 `.log` 修正後重跑，直到沒有錯誤。
-- 檢查 log 有沒有 `Missing character`（缺字）：有就表示字型找不到某些繁體字，換字型或改字。
-- 檔名用有意義的繁中名稱：`<影片中文標題>_筆記.tex`、`<影片中文標題>_筆記.pdf`（去掉 `\/:*?"<>|`）。
-- 編譯後實際看幾頁 PDF（轉成圖片檢查），確認封面、截圖、公式、時間戳連結正常。
+照 `references/pdf.md`。
 
 ## 第 8 步：寫進 Notion
 
@@ -274,9 +213,13 @@ Notion connector 沒接或寫入失敗時：把 `筆記.md`（要 PDF 時是 PDF
 ## 檔案
 
 - `assets/notes-template.tex`：繁中 LaTeX 範本（字型自動挑選、`\ts`／`\tsrange` 時間戳），只在要 PDF 時用
+- `references/online-video.md`：YouTube／Bilibili 的下載、封面、字幕，下載不到時的做法，Bilibili 注意事項
 - `references/local-video.md`：本地影片的 metadata、字幕、封面處理
+- `references/transcribe.md`：沒有字幕時的語音轉文字（SenseVoice、whisper）
+- `references/pdf.md`：編譯 PDF（只在要 PDF 時）
 - `references/notion-output.md`：Notion 頁面格式、上傳圖片和 PDF、欄位對應
 - `references/setup.md`：Windows／macOS 工具安裝步驟
 - `scripts/check_env.py`：檢查工具；加 `--pdf` 時也檢查 xelatex、中文 LaTeX 套件與字型
+- `scripts/compact_subs.py`：把 SRT／VTT 壓成每句一行的 `subs.txt`，寫筆記和審查都讀這份
 - `scripts/scan_frames.py`：截圖第一段，逐幀場景偵測＋每秒保底＋去重複，產生總覽圖
 - `scripts/transcribe.py`：用 SenseVoice 或 whisper（sherpa-onnx）把音訊轉成 SRT

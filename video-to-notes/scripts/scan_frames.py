@@ -4,13 +4,14 @@
 做兩件事，結果放在 <輸出資料夾>：
 1. 逐幀場景變化偵測 → segments.txt（每個畫面段落的起訖秒數），以及每段中間一格的縮圖。
    停留不到 1 秒的段落，把該段每一格都抽出來，避免短暫閃過的畫面（例如提示詞）被漏掉。
+   但連續好幾秒都是短段落（捲動網頁、動畫）時，只抽停下來的最後一格，避免產生上千張捲到一半的縮圖。
 2. 每秒一格的保底抽樣，抓慢慢捲動、逐字打出這類變化太小、偵測不到的畫面。
 兩邊合併後，去掉和前一張幾乎相同的縮圖，再拼成總覽圖 sheet_XX.jpg（每張 6x6，左上角印時間）。
 
 用總覽圖決定要哪些畫面後，回原影片用原解析度抽格、裁切（見 SKILL.md 第 4 步）。
 
 需要：ffmpeg、ffprobe；拼總覽圖需要 ImageMagick（magick 或 montage）。
-用法：python scripts/scan_frames.py video.mp4 frames_scan [--threshold 0.02] [--width 466]
+用法：python scripts/scan_frames.py video.mp4 frames_scan [--threshold 0.02] [--burst-max 1.5] [--width 466]
 """
 import argparse
 import glob
@@ -60,6 +61,8 @@ def main():
     ap.add_argument("outdir")
     ap.add_argument("--threshold", type=float, default=0.02,
                     help="場景變化門檻。投影片捲動、螢幕錄影用 0.02；剪接明顯的影片可提高到 0.1–0.3")
+    ap.add_argument("--burst-max", type=float, default=1.5,
+                    help="連續短畫面總長在這個秒數內才逐格抽；更長的視為捲動或動畫，只抽最後一格（預設 1.5）")
     ap.add_argument("--width", type=int, default=466, help="縮圖寬度（只用來看圖，不是最後用圖）")
     a = ap.parse_args()
 
@@ -83,15 +86,31 @@ def main():
             f.write(f"{s:.3f} {e:.3f} {e - s:.3f}\n")
 
     # 要抽的時間點：(秒, 是否可去重複)。短暫畫面的格不去重複，那正是要找的東西。
-    picks = {}
-    for s, e in segs:
-        if e - s < 1.0:  # 短暫畫面：每一格都抽（以 30fps 計）
-            t = s + 1 / 60
-            while t < e:
-                picks[round(t, 3)] = False
-                t += 1 / 30
+    # 連續的短段落合成一串（burst）。一串總長不超過 BURST_MAX 秒，是「閃過的畫面」（標題卡、提示詞），
+    # 每一格都抽；更長的一串是捲動網頁、動畫這類「一直在變」的畫面，每一格都抽會產生上千張幾乎
+    # 一樣、捲到一半的縮圖，所以只抽停下來的最後一格，中間靠每秒一格的保底。
+    picks, burst = {}, []
+
+    def flush():
+        if not burst:
+            return
+        if burst[-1][1] - burst[0][0] <= a.burst_max:
+            for s, e in burst:  # 短暫畫面：每一格都抽（以 30fps 計）
+                t = s + 1 / 60
+                while t < e:
+                    picks[round(t, 3)] = False
+                    t += 1 / 30
         else:
+            picks[round(max(burst[-1][1] - 1 / 60, burst[-1][0]), 3)] = False
+        burst.clear()
+
+    for s, e in segs:
+        if e - s < 1.0:
+            burst.append((s, e))
+        else:
+            flush()
             picks.setdefault(round((s + e) / 2, 3), True)
+    flush()
     # 2. 每秒一格保底（一次 ffmpeg 抽完，比逐一跳轉快很多）
     base = os.path.join(thumbs, "b_%05d.jpg")
     out = run(["ffmpeg", "-v", "info", "-y", "-i", a.video, "-vf",
